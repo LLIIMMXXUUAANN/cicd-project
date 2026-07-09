@@ -8,20 +8,24 @@ on:
 
 jobs:
   deploy-staging:
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: staging
     steps:
       - name: Trigger Render deploy
         id: deploy
         run: |
           IMAGE="ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]'):${{ github.event.workflow_run.head_sha }}"
-          RESPONSE=$(curl -s -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_STAGING_SERVICE_ID }}/deploys" \
+          if ! RESPONSE=$(curl -sS --max-time 15 -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_STAGING_SERVICE_ID }}/deploys" \
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d "{\"imageUrl\": \"$IMAGE\"}")
+            -d "{\"imageUrl\": \"$IMAGE\"}"); then
+            echo "Request to Render failed"
+            exit 1
+          fi
           echo "$RESPONSE"
-          DEPLOY_ID=$(echo "$RESPONSE" | jq -r '.id')
+          DEPLOY_ID=$(echo "$RESPONSE" | jq -r '.id' 2>/dev/null || echo "")
           if [ -z "$DEPLOY_ID" ] || [ "$DEPLOY_ID" = "null" ]; then
             echo "Could not parse a deploy id from the Render response above — check the field name and adjust the jq filter."
             exit 1
@@ -30,8 +34,13 @@ jobs:
       - name: Poll deploy status
         run: |
           for i in $(seq 1 30); do
-            STATUS=$(curl -s -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-              "https://api.render.com/v1/services/${{ secrets.RENDER_STAGING_SERVICE_ID }}/deploys/${{ steps.deploy.outputs.deploy_id }}" | jq -r '.status')
+            if ! RAW=$(curl -sS --max-time 15 -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              "https://api.render.com/v1/services/${{ secrets.RENDER_STAGING_SERVICE_ID }}/deploys/${{ steps.deploy.outputs.deploy_id }}"); then
+              echo "Request to Render failed, retrying..."
+              sleep 10
+              continue
+            fi
+            STATUS=$(echo "$RAW" | jq -r '.status' 2>/dev/null || echo "")
             echo "status: $STATUS"
             if [ "$STATUS" = "live" ]; then
               exit 0
