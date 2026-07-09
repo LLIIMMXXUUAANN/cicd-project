@@ -32,3 +32,8 @@ def test_get_returns_matching_quote():
 def test_get_returns_none_when_missing():
     store = QuoteStore()
     assert store.get(999) is None
+
+
+def test_get_returns_none_for_negative_id():
+    store = QuoteStore()
+    assert store.get(-1) is None
