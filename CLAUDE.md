@@ -88,5 +88,13 @@ rely on that as the only protection.
   GitHub PAT, with an expiration set). Never suggest making the package public again
   as a way to "simplify" deploys — that's a deliberate trade-off already made in favor
   of keeping the built image access-controlled.
+- **Never make this repository private.** Required-reviewer environment protection
+  (the production approval gate) is a free-plan feature only for public repos — if the
+  repo goes private, GitHub silently drops the rule with no warning, and it can't be
+  re-added without upgrading to GitHub Enterprise Cloud. This happened once already
+  during development (package visibility and repo visibility are separate settings
+  that are easy to conflate) and broke the approval gate without any error until
+  someone checked for it directly. Repo visibility and package visibility are
+  independent — only the package should ever be private, never the repo.
 - Don't commit anything that shouldn't be visible to anyone, regardless of the
   package's visibility — the repo itself is still public.

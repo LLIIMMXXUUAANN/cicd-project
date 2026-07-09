@@ -87,6 +87,15 @@ Two GitHub Environments must exist (`staging`, `production`), each with:
 `production` additionally requires a reviewer configured under its protection rules —
 that single setting is what makes `deploy-production` pause for approval.
 
+**Important constraint:** required-reviewer environment protection is only available
+on the free GitHub plan for **public** repositories. If this repo is ever made
+private, GitHub silently drops the rule (there's no error, no warning — the
+protection just stops existing), and re-adding it fails with a billing-plan error
+until either the repo goes back to public or the account upgrades to GitHub
+Enterprise Cloud (GitHub Pro/Team do **not** unlock this for private repos). This
+repo is deliberately kept **public** specifically so the approval gate keeps
+working on the free plan — the GHCR package is what's private, not the repo.
+
 ### Render configuration
 
 Two Render Web Services, each configured to deploy an existing image from a registry
