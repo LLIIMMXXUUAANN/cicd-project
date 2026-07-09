@@ -880,6 +880,8 @@ jobs:
           exit 1
 ```
 
+> **Note (updated after implementation):** code review of this task found three issues, all fixed in the actual `cd.yml`: (1) relying on undocumented/disputed bash `pipefail` defaults to catch a `curl` failure piped into `jq`, instead now using explicit `if ! X=$(curl --max-time 15 ...); then ...; fi` around every network call; (2) no timeout, so a hung Render API call could block for GitHub's 360-minute default — added `timeout-minutes: 10` at the job level; (3) `workflow_run: branches: [main]` alone is a documented-unreliable filter — added a belt-and-suspenders `github.event.workflow_run.head_branch == 'main'` check alongside the conclusion check. A later review of Task 16 also added a top-level `concurrency: { group: cd-deploy, cancel-in-progress: false }` block to the whole workflow, so overlapping `workflow_run` events can't race each other's deploys. See the actual `.github/workflows/cd.yml` for the current, correct version.
+
 - [ ] **Step 2: Commit and push**
 
 ```bash

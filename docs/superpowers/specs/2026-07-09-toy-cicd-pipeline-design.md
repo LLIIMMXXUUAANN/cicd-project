@@ -50,9 +50,12 @@ Stack: FastAPI + uvicorn (gives free OpenAPI docs at `/docs`, useful for demoing
 cicd-project/
 ├── app/
 │   ├── main.py          # FastAPI app + routes
-│   └── models.py        # Pydantic Quote model
+│   ├── models.py        # Pydantic Quote/QuoteCreate models
+│   └── store.py         # in-memory QuoteStore
 ├── tests/
-│   └── test_quotes.py   # pytest — unit tests on the model, integration tests via TestClient
+│   ├── test_main.py     # integration tests via TestClient
+│   ├── test_models.py   # unit tests on the models
+│   └── test_store.py    # unit tests on QuoteStore
 ├── Dockerfile
 ├── pyproject.toml       # deps + ruff config, managed with uv
 ├── .dockerignore

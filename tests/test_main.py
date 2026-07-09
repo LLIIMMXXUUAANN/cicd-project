@@ -47,3 +47,13 @@ def test_get_quote_by_id_found(client):
 def test_get_quote_by_id_not_found(client):
     response = client.get("/quotes/999")
     assert response.status_code == 404
+
+
+def test_create_quote_rejects_empty_text(client):
+    response = client.post("/quotes", json={"text": "", "author": "Nike"})
+    assert response.status_code == 422
+
+
+def test_create_quote_rejects_missing_author(client):
+    response = client.post("/quotes", json={"text": "Just do it"})
+    assert response.status_code == 422
