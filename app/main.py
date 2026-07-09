@@ -1,6 +1,6 @@
 from fastapi import Depends, FastAPI
 
-from app.models import Quote
+from app.models import Quote, QuoteCreate
 from app.store import QuoteStore
 
 app = FastAPI()
@@ -15,3 +15,8 @@ def get_store() -> QuoteStore:
 @app.get("/quotes")
 def list_quotes(store: QuoteStore = Depends(get_store)) -> list[Quote]:
     return store.list()
+
+
+@app.post("/quotes", status_code=201)
+def create_quote(payload: QuoteCreate, store: QuoteStore = Depends(get_store)) -> Quote:
+    return store.create(payload)

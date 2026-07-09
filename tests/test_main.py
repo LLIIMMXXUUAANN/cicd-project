@@ -18,3 +18,19 @@ def test_list_quotes_empty(client):
     response = client.get("/quotes")
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_create_quote_returns_201_and_assigns_id(client):
+    response = client.post("/quotes", json={"text": "Just do it", "author": "Nike"})
+    assert response.status_code == 201
+    body = response.json()
+    assert body["id"] == 1
+    assert body["text"] == "Just do it"
+    assert body["author"] == "Nike"
+
+
+def test_created_quote_appears_in_list(client):
+    client.post("/quotes", json={"text": "Move fast", "author": "Meta"})
+    response = client.get("/quotes")
+    assert response.status_code == 200
+    assert len(response.json()) == 1
