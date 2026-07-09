@@ -90,8 +90,16 @@ that single setting is what makes `deploy-production` pause for approval.
 ### Render configuration
 
 Two Render Web Services, each configured to deploy an existing image from a registry
-(`ghcr.io/<owner>/cicd-project`), not to build from source. The GHCR package must be
-public (or each service given a registry credential) so Render can pull it.
+(`ghcr.io/<owner>/cicd-project`), not to build from source. The GHCR package is
+**private** — Render authenticates to pull it using a reusable Workspace-level
+**Container Registry Credential** (Registry: GitHub Container Registry, Username:
+the GitHub owner, Personal Access Token: a classic PAT scoped to `read:packages`
+only, with an expiration set — not "No expiration"). That credential is attached to
+both `quotes-api-staging` and `quotes-api-production` under each service's settings.
+
+CI still pushes to GHCR using the workflow's automatic `GITHUB_TOKEN` regardless of
+the package's visibility — only the *pull* side (Render) needs a credential; the
+*push* side (CI) always has one implicitly.
 
 ## Project docs
 

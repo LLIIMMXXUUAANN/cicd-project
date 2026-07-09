@@ -740,6 +740,8 @@ Expected: not `401` (some non-auth-error status — GHCR's anonymous manifest ac
 
 *(If you kept the repo private in Task 9, skip this task, and instead configure a registry credential on each Render service in Task 13 using a GitHub Personal Access Token with `read:packages` scope.)*
 
+> **Note (updated after implementation):** the package was initially made public per this task, to keep the toy project's first pass simple. It was later switched back to **private**, closer to how a real deployment would be set up, since making a build artifact publicly pullable has no upside for a non-open-source-distribution use case and is a needless exposure. The switch: change GHCR package visibility back to Private, generate a GitHub PAT (classic) scoped to `read:packages` with an expiration set (not "No expiration"), add it as a reusable Container Registry Credential in Render's Workspace Settings, and attach that credential to both `quotes-api-staging` and `quotes-api-production` under each service's settings. CI's push side needed no changes — `GITHUB_TOKEN` can always push to a package in its own repo regardless of visibility; only Render's *pull* side needed the new credential.
+
 ---
 
 ### Task 13: Render — create staging and production services

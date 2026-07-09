@@ -83,6 +83,10 @@ rely on that as the only protection.
   `GET /quotes/{id}`) unless explicitly asked to extend it.
 - Run `uv run pytest -v` and `uv run ruff check .` before considering any change to
   `app/` or `tests/` complete.
-- This repo is public and the GHCR package is public (required for Render to pull it
-  without a registry credential) — don't commit anything that shouldn't be visible
-  to anyone.
+- This repo is public, but the GHCR package is **private** — Render authenticates to
+  pull it via a Workspace-level Container Registry Credential (a `read:packages`-scoped
+  GitHub PAT, with an expiration set). Never suggest making the package public again
+  as a way to "simplify" deploys — that's a deliberate trade-off already made in favor
+  of keeping the built image access-controlled.
+- Don't commit anything that shouldn't be visible to anyone, regardless of the
+  package's visibility — the repo itself is still public.
