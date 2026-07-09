@@ -520,7 +520,7 @@ git commit -m "style: apply ruff lint/format fixes"
 
 ```dockerfile
 FROM python:3.12-slim
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.11.28 /uv /uvx /bin/
 
 WORKDIR /app
 
@@ -530,10 +530,14 @@ RUN uv sync --locked --no-install-project --no-dev
 COPY app ./app
 RUN uv sync --locked --no-dev
 
+ENV PATH="/app/.venv/bin:$PATH"
+
 EXPOSE 8000
 
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
+
+> **Note (updated after implementation):** the original draft used `CMD ["uv", "run", "uvicorn", ...]` and `uv:latest`. Code review caught that `uv run` performs an implicit `uv sync` (including dev dependencies) on every container start, requiring network access and crashing under restricted egress — verified by running the built image with `docker run --network none`. Fixed by putting the venv on `PATH` and invoking `uvicorn` directly, and pinning the `uv` image tag instead of floating on `:latest`. The content above reflects the corrected, as-built version.
 
 - [ ] **Step 2: Write .dockerignore**
 
