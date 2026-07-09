@@ -34,3 +34,16 @@ def test_created_quote_appears_in_list(client):
     response = client.get("/quotes")
     assert response.status_code == 200
     assert len(response.json()) == 1
+
+
+def test_get_quote_by_id_found(client):
+    create_response = client.post("/quotes", json={"text": "Ship it", "author": "Amazon"})
+    quote_id = create_response.json()["id"]
+    response = client.get(f"/quotes/{quote_id}")
+    assert response.status_code == 200
+    assert response.json()["text"] == "Ship it"
+
+
+def test_get_quote_by_id_not_found(client):
+    response = client.get("/quotes/999")
+    assert response.status_code == 404
